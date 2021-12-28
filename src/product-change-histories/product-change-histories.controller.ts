@@ -13,13 +13,12 @@ export class ProductChangeHistoriesController {
     @Query('range') range: string,
     @Query('sort') sort: string,
   ) {
-    const [skip, limit] = JSON.parse(range); // [0, 10]
-    console.log(filter); // { "productId": "xxxx" }
-    console.log(JSON.parse(sort)); // { createdAt: 'desc' }
+    // const [skip, limit] = JSON.parse(range); // [0, 10]
+    // console.log(JSON.parse(sort)); // { createdAt: 'desc' }
     return this.productChangeHistoriesService.findAll(
       JSON.parse(filter),
-      skip,
-      limit,
+      0,
+      10,
     );
   }
 }

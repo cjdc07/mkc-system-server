@@ -8,19 +8,17 @@ export type ProductChangeHistoryDocument = ProductChangeHistory & Document;
   toJSON: {
     virtuals: true,
   },
+  timestamps: true,
 })
 export class ProductChangeHistory {
-  @Prop({ default: 0 })
-  quantity: number;
+  @Prop()
+  description: string;
 
-  @Prop({ default: 0 })
-  quantityChange: number;
-
-  @Prop({ default: 'Creation', enum: ['Creation', 'Order', 'Manual Update'] })
-  type: string;
-
-  @Prop({ default: Date.now() })
-  createdAt: Date;
+  @Prop({
+    default: 'New Product',
+    enum: ['New Product', 'Order', 'Manual Update'],
+  })
+  createdFrom: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Product' })
   product: Product;

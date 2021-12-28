@@ -7,6 +7,7 @@ export type ProductDocument = Product & Document;
   toJSON: {
     virtuals: true,
   },
+  timestamps: true,
 })
 export class Product {
   @Prop({ required: true })
@@ -20,12 +21,6 @@ export class Product {
 
   @Prop({ default: 'pc/s' })
   unit: string;
-
-  @Prop({ default: Date.now() })
-  createdAt: Date;
-
-  @Prop({ default: Date.now() })
-  updatedAt: Date;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

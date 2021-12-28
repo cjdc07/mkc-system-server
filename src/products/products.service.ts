@@ -20,8 +20,7 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto) {
     const product = new this.productModel(createProductDto);
     const productHistory = new this.productChangeHistoryModel({
-      quantity: product.quantity,
-      quantityChange: product.quantity,
+      description: `Created ${product.name}. ${product.quantity} ${product.unit}s at ₱${product.pricePerUnit} per ${product.unit}.`,
       product: product._id,
     });
     await productHistory.save();
@@ -49,23 +48,49 @@ export class ProductsService {
 
   async update(id: string, updateProductDto: UpdateProductDto) {
     const product = await this.productModel.findById(id);
+    const properties = ['name', 'pricePerUnit', 'unit', 'quantity'];
 
-    console.log(updateProductDto.quantity, product.quantity);
+    const changes = properties.reduce((acc, prop) => {
+      if (product[prop] !== updateProductDto[prop]) {
+        acc[prop] = {
+          from: product[prop],
+          to: updateProductDto[prop],
+        };
+      }
+      return acc;
+    }, {});
 
-    const productHistory = new this.productChangeHistoryModel({
-      quantity: updateProductDto.quantity,
-      quantityChange: updateProductDto.quantity - product.quantity,
-      product: product._id,
-      type: 'Manual Update',
+    if (Object.keys(changes).length > 0) {
+      let description = 'Updated';
+
+      Object.keys(changes).forEach((prop, index) => {
+        const change = changes[prop];
+
+        if (prop === 'pricePerUnit') {
+          description += ` price per unit from ₱${change.from} to ₱${change.to}`;
+        } else {
+          description += ` ${prop} from ${change.from} to ${change.to}`;
+        }
+
+        if (index < Object.keys(changes).length - 1) {
+          description += ', ';
+        } else {
+          description += '.';
+        }
+      });
+
+      const productHistory = new this.productChangeHistoryModel({
+        description,
+        product: product._id,
+        createdFrom: 'Manual Update',
+      });
+
+      await productHistory.save();
+    }
+
+    return this.productModel.findByIdAndUpdate(id, updateProductDto, {
+      new: true,
     });
-
-    await productHistory.save();
-
-    return this.productModel.findOneAndUpdate(
-      { _id: id },
-      { ...updateProductDto, updatedAt: Date.now() },
-      { new: true },
-    );
   }
 
   remove(id: string) {
