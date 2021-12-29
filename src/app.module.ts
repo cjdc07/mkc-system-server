@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
 import { ProductChangeHistoriesModule } from './product-change-histories/product-change-histories.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProductChangeHistoriesModule } from './product-change-histories/product
       inject: [ConfigService],
     }),
     ProductChangeHistoriesModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
