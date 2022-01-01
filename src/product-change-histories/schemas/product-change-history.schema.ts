@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Product } from 'src/products/schemas/product.schema';
+import { User } from 'src/users/schemas/user.schema';
 
 export type ProductChangeHistoryDocument = ProductChangeHistory & Document;
 
@@ -22,6 +23,9 @@ export class ProductChangeHistory {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Product' })
   product: Product;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  changedBy: User;
 }
 
 export const ProductChangeHistorySchema =

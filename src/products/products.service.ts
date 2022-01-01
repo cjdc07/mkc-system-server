@@ -17,11 +17,15 @@ export class ProductsService {
     private productChangeHistoryModel: Model<ProductChangeHistoryDocument>,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
-    const product = new this.productModel(createProductDto);
+  async create(createProductDto: CreateProductDto, userId: string) {
+    const product = new this.productModel({
+      ...createProductDto,
+      createdBy: userId,
+    });
     const productHistory = new this.productChangeHistoryModel({
       description: `Created ${product.name}. ${product.quantity} ${product.unit}s at ₱${product.pricePerUnit} per ${product.unit}.`,
       product: product._id,
+      changedBy: userId,
     });
     await productHistory.save();
     return product.save();
@@ -30,6 +34,7 @@ export class ProductsService {
   async findAll(skip: number, limit: number) {
     const data = await this.productModel
       .find({})
+      .populate('createdBy updatedBy')
       .skip(skip)
       .limit(limit)
       .sort({ name: 'asc' });
@@ -46,7 +51,7 @@ export class ProductsService {
     return this.productModel.findById(id);
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, userId: string) {
     const product = await this.productModel.findById(id);
     const properties = ['name', 'pricePerUnit', 'unit', 'quantity'];
 
@@ -83,14 +88,19 @@ export class ProductsService {
         description,
         product: product._id,
         createdFrom: 'Manual Update',
+        changedBy: userId,
       });
 
       await productHistory.save();
     }
 
-    return this.productModel.findByIdAndUpdate(id, updateProductDto, {
-      new: true,
-    });
+    return this.productModel.findByIdAndUpdate(
+      id,
+      { ...updateProductDto, updatedBy: userId },
+      {
+        new: true,
+      },
+    );
   }
 
   remove(id: string) {

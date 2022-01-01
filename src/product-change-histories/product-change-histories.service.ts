@@ -16,6 +16,7 @@ export class ProductChangeHistoriesService {
   async findAll(filter: any, skip: number, limit: number) {
     const data = await this.productChangeHistoryModel
       .find(filter)
+      .populate('changedBy')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: 'desc' });
