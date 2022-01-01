@@ -103,7 +103,8 @@ export class ProductsService {
     );
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    await this.productChangeHistoryModel.deleteMany({ product: id });
     return this.productModel.deleteOne({ _id: id });
   }
 
