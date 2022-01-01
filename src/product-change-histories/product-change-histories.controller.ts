@@ -1,4 +1,5 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ProductChangeHistoriesService } from './product-change-histories.service';
 
 @Controller('product-change-histories')
@@ -7,6 +8,7 @@ export class ProductChangeHistoriesController {
     private readonly productChangeHistoriesService: ProductChangeHistoriesService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(
     @Query('filter') filter: string,
