@@ -34,10 +34,9 @@ export class ProductsService {
   async findAll(skip: number, limit: number) {
     const data = await this.productModel
       .find({})
-      .populate('createdBy updatedBy')
+      .sort({ name: 'asc' })
       .skip(skip)
-      .limit(limit)
-      .sort({ name: 'asc' });
+      .limit(limit);
 
     const total = await this.productModel.count({});
 
