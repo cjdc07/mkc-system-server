@@ -13,13 +13,16 @@ export type ProductChangeHistoryDocument = ProductChangeHistory & Document;
 })
 export class ProductChangeHistory {
   @Prop()
-  description: string;
+  descriptions: [string];
 
   @Prop({
     default: 'New Product',
     enum: ['New Product', 'Order', 'Manual Update'],
   })
   createdFrom: string;
+
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  changes: any;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Product' })
   product: Product;

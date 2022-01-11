@@ -34,7 +34,7 @@ export class ProductsController {
     @Query('sort') sort: string,
   ) {
     const [skip, limit] = JSON.parse(range);
-    return this.productsService.findAll(skip, limit);
+    return this.productsService.findAll(skip, limit, JSON.parse(filter));
   }
 
   @UseGuards(JwtAuthGuard)

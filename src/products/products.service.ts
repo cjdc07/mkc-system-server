@@ -22,8 +22,16 @@ export class ProductsService {
       ...createProductDto,
       createdBy: userId,
     });
+
+    const descriptions = [
+      `Created ${product.name}.`,
+      `Initial quantity: ${product.quantity}`,
+      `Unit: ${product.unit}`,
+      `Price: ₱${product.pricePerUnit}`,
+    ];
+
     const productHistory = new this.productChangeHistoryModel({
-      description: `Created ${product.name}. ${product.quantity} ${product.unit}s at ₱${product.pricePerUnit} per ${product.unit}.`,
+      descriptions,
       product: product._id,
       changedBy: userId,
     });
@@ -31,14 +39,15 @@ export class ProductsService {
     return product.save();
   }
 
-  async findAll(skip: number, limit: number) {
+  async findAll(skip: number, limit: number, filter: any) {
+    const { property, value } = filter;
     const data = await this.productModel
-      .find({})
+      .find({ [property]: new RegExp(value, 'ig') })
       .sort({ name: 'asc' })
       .skip(skip)
       .limit(limit);
 
-    const total = await this.productModel.count({});
+    const total = await this.productModel.count(filter);
 
     return {
       data,
@@ -55,36 +64,39 @@ export class ProductsService {
     const properties = ['name', 'pricePerUnit', 'unit', 'quantity'];
 
     const changes = properties.reduce((acc, prop) => {
+      const to = isNaN(updateProductDto[prop])
+        ? updateProductDto[prop]
+        : Number(updateProductDto[prop]);
+
       if (product[prop] !== updateProductDto[prop]) {
         acc[prop] = {
           from: product[prop],
-          to: updateProductDto[prop],
+          to,
         };
       }
       return acc;
     }, {});
 
     if (Object.keys(changes).length > 0) {
-      let description = 'Updated';
+      const descriptions = [];
 
-      Object.keys(changes).forEach((prop, index) => {
+      Object.keys(changes).forEach((prop) => {
         const change = changes[prop];
 
         if (prop === 'pricePerUnit') {
-          description += ` price per unit from ₱${change.from} to ₱${change.to}`;
+          descriptions.push(
+            `Updated price from ₱${change.from} to ₱${change.to}`,
+          );
         } else {
-          description += ` ${prop} from ${change.from} to ${change.to}`;
-        }
-
-        if (index < Object.keys(changes).length - 1) {
-          description += ', ';
-        } else {
-          description += '.';
+          descriptions.push(
+            `Updated ${prop} from ${change.from} to ${change.to}`,
+          );
         }
       });
 
       const productHistory = new this.productChangeHistoryModel({
-        description,
+        descriptions,
+        changes,
         product: product._id,
         createdFrom: 'Manual Update',
         changedBy: userId,
