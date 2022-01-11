@@ -11,11 +11,23 @@ export type ProductDocument = Product & Document;
   timestamps: true,
 })
 export class Product {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
+  code: string;
+
+  @Prop({ required: true, unique: true })
   name: string;
 
   @Prop({ default: 0 })
-  pricePerUnit: number;
+  srp1: number;
+
+  @Prop({ default: 0 })
+  srp2: number;
+
+  @Prop({ default: 0 })
+  wholesalePrice: number;
+
+  @Prop({ default: 0 })
+  distributorPrice: number;
 
   @Prop({ default: 0 })
   quantity: number;

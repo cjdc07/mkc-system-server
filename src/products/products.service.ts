@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -27,7 +27,10 @@ export class ProductsService {
       `Created ${product.name}.`,
       `Initial quantity: ${product.quantity}`,
       `Unit: ${product.unit}`,
-      `Price: ₱${product.pricePerUnit}`,
+      `SRP1: ₱${product.srp1}`,
+      `SRP2: ₱${product.srp2}`,
+      `Wholesale Price: ₱${product.wholesalePrice}`,
+      `Distributor Price: ₱${product.distributorPrice}`,
     ];
 
     const productHistory = new this.productChangeHistoryModel({
@@ -35,8 +38,19 @@ export class ProductsService {
       product: product._id,
       changedBy: userId,
     });
-    await productHistory.save();
-    return product.save();
+
+    try {
+      await product.save();
+      await productHistory.save();
+      return product;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new HttpException(
+          'Product code or name already exists!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
   }
 
   async findAll(skip: number, limit: number, filter: any) {
@@ -61,7 +75,16 @@ export class ProductsService {
 
   async update(id: string, updateProductDto: UpdateProductDto, userId: string) {
     const product = await this.productModel.findById(id);
-    const properties = ['name', 'pricePerUnit', 'unit', 'quantity'];
+    const properties = [
+      'code',
+      'name',
+      'srp1',
+      'srp2',
+      'wholesalePrice',
+      'distributorPrice',
+      'unit',
+      'quantity',
+    ];
 
     const changes = properties.reduce((acc, prop) => {
       const to = isNaN(updateProductDto[prop])
@@ -77,41 +100,58 @@ export class ProductsService {
       return acc;
     }, {});
 
-    if (Object.keys(changes).length > 0) {
-      const descriptions = [];
+    try {
+      const updatedProduct = await this.productModel.findByIdAndUpdate(
+        id,
+        { ...updateProductDto, updatedBy: userId },
+        {
+          new: true,
+        },
+      );
 
-      Object.keys(changes).forEach((prop) => {
-        const change = changes[prop];
+      if (Object.keys(changes).length > 0) {
+        const descriptions = [];
 
-        if (prop === 'pricePerUnit') {
-          descriptions.push(
-            `Updated price from ₱${change.from} to ₱${change.to}`,
-          );
-        } else {
-          descriptions.push(
-            `Updated ${prop} from ${change.from} to ${change.to}`,
-          );
-        }
-      });
+        Object.keys(changes).forEach((prop) => {
+          const change = changes[prop];
+          const priceProps = [
+            'srp1',
+            'srp2',
+            'wholesalePrice',
+            'distributorPrice',
+          ];
 
-      const productHistory = new this.productChangeHistoryModel({
-        descriptions,
-        changes,
-        product: product._id,
-        createdFrom: 'Manual Update',
-        changedBy: userId,
-      });
+          if (priceProps.includes(prop)) {
+            descriptions.push(
+              `Updated price from ₱${change.from} to ₱${change.to}`,
+            );
+          } else {
+            descriptions.push(
+              `Updated ${prop} from ${change.from} to ${change.to}`,
+            );
+          }
+        });
 
-      await productHistory.save();
+        const productHistory = new this.productChangeHistoryModel({
+          descriptions,
+          changes,
+          product: product._id,
+          createdFrom: 'Manual Update',
+          changedBy: userId,
+        });
+
+        await productHistory.save();
+      }
+
+      return updatedProduct;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new HttpException(
+          'Product code or name already exists!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
-
-    return this.productModel.findByIdAndUpdate(
-      id,
-      { ...updateProductDto, updatedBy: userId },
-      {
-        new: true,
-      },
-    );
   }
 
   async remove(id: string) {
