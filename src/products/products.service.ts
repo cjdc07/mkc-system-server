@@ -67,7 +67,12 @@ export class ProductsService {
       .skip(skip)
       .limit(limit);
 
-    const total = await this.productModel.count(filter);
+    const total = await this.productModel.count({
+      $or: [
+        { code: { $regex: code ? new RegExp(code, 'i') : '' } },
+        { name: { $regex: name ? new RegExp(name, 'i') : '' } },
+      ],
+    });
 
     return {
       data,
