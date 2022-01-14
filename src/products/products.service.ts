@@ -54,9 +54,15 @@ export class ProductsService {
   }
 
   async findAll(skip: number, limit: number, filter: any) {
-    const { property, value } = filter;
+    const { code, name } = filter;
+
     const data = await this.productModel
-      .find({ [property]: new RegExp(value, 'ig') })
+      .find({
+        $or: [
+          { code: { $regex: code ? new RegExp(code, 'i') : '' } },
+          { name: { $regex: name ? new RegExp(name, 'i') : '' } },
+        ],
+      })
       .sort({ name: 'asc' })
       .skip(skip)
       .limit(limit);
