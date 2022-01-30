@@ -54,25 +54,26 @@ export class ProductsService {
   }
 
   async findAll(skip: number, limit: number, filter: any) {
+    console.log(skip, limit, filter);
     const { code, name } = filter;
+    let findFilter = {};
 
-    const data = await this.productModel
-      .find({
+    if (code || name) {
+      findFilter = {
         $or: [
           { code: { $regex: code ? new RegExp(code, 'i') : '' } },
           { name: { $regex: name ? new RegExp(name, 'i') : '' } },
         ],
-      })
+      };
+    }
+
+    const data = await this.productModel
+      .find(findFilter)
       .sort({ name: 'asc' })
       .skip(skip)
       .limit(limit);
 
-    const total = await this.productModel.count({
-      $or: [
-        { code: { $regex: code ? new RegExp(code, 'i') : '' } },
-        { name: { $regex: name ? new RegExp(name, 'i') : '' } },
-      ],
-    });
+    const total = await this.productModel.count(findFilter);
 
     return {
       data,
