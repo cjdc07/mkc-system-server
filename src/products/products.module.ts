@@ -12,5 +12,8 @@ import { ProductChangeHistoriesModule } from 'src/product-change-histories/produ
   ],
   controllers: [ProductsController],
   providers: [ProductsService],
+  exports: [
+    MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
+  ],
 })
 export class ProductsModule {}

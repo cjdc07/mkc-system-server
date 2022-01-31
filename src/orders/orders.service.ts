@@ -1,6 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Product, ProductDocument } from 'src/products/schemas/product.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order, OrderDocument } from './schemas/order.schema';
@@ -9,10 +10,29 @@ import { Order, OrderDocument } from './schemas/order.schema';
 export class OrdersService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @InjectModel(Product.name) private productModel: Model<ProductDocument>,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
     const order = new this.orderModel(createOrderDto);
+    const productIds = order.productOrders.map(({ productId, quantity }) => ({
+      productId,
+      quantity,
+    }));
+
+    await Promise.all(
+      productIds.map(async ({ productId, quantity }) => {
+        const product = await this.productModel.findById(productId);
+
+        return this.productModel.findByIdAndUpdate(
+          productId,
+          { quantity: product.quantity - quantity },
+          {
+            new: true,
+          },
+        );
+      }),
+    );
 
     try {
       await order.save();
