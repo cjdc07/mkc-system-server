@@ -54,7 +54,6 @@ export class ProductsService {
   }
 
   async findAll(skip: number, limit: number, filter: any) {
-    console.log(skip, limit, filter);
     const { code, name } = filter;
     let findFilter = {};
 

@@ -24,6 +24,11 @@ export class OrdersService {
       productIds.map(async ({ productId, quantity }) => {
         const product = await this.productModel.findById(productId);
 
+        if (!product) {
+          // TODO: throw error if product does not exist
+          return null;
+        }
+
         return this.productModel.findByIdAndUpdate(
           productId,
           { quantity: product.quantity - quantity },
@@ -43,7 +48,24 @@ export class OrdersService {
   }
 
   findAll() {
-    return `This action returns all orders`;
+    return this.orderModel.aggregate([
+      { $match: {} },
+      {
+        $group: {
+          _id: '$status' as any,
+          orders: {
+            $push: '$$ROOT',
+          },
+        },
+      },
+      {
+        $project: {
+          status: '$_id',
+          orders: 1,
+          _id: 0,
+        },
+      },
+    ]);
   }
 
   findOne(id: number) {
