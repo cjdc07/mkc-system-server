@@ -19,14 +19,14 @@ export class OrdersService {
     const uuid = uuidv4().split('-')[0].toUpperCase();
     const code = `${today}-${uuid}`;
     const order = new this.orderModel({ code, ...createOrderDto });
-    const productIds = order.productOrders.map(({ productId, quantity }) => ({
-      productId,
+    const productIds = order.productOrders.map(({ id, quantity }) => ({
+      id,
       quantity,
     }));
 
     await Promise.all(
-      productIds.map(async ({ productId, quantity }) => {
-        const product = await this.productModel.findById(productId);
+      productIds.map(async ({ id, quantity }) => {
+        const product = await this.productModel.findById(id);
 
         if (!product) {
           // TODO: throw error if product does not exist
@@ -34,7 +34,7 @@ export class OrdersService {
         }
 
         return this.productModel.findByIdAndUpdate(
-          productId,
+          id,
           { quantity: product.quantity - quantity },
           {
             new: true,

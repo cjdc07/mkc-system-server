@@ -31,7 +31,7 @@ export class Order {
   @Prop()
   deliveryDate: Date;
 
-  // Props should only be productId, price, quantity
+  // Props should only be id, price, quantity, total
   @Prop([{ type: MongooseSchema.Types.Mixed }])
   productOrders: [any];
 
