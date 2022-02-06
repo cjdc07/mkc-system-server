@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -14,7 +15,10 @@ export class OrdersService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
-    const order = new this.orderModel(createOrderDto);
+    const today = new Date().toISOString().split('T')[0];
+    const uuid = uuidv4().split('-')[0].toUpperCase();
+    const code = `${today}-${uuid}`;
+    const order = new this.orderModel({ code, ...createOrderDto });
     const productIds = order.productOrders.map(({ productId, quantity }) => ({
       productId,
       quantity,

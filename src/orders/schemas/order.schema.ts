@@ -11,6 +11,9 @@ export type OrderDocument = Order & Document;
 })
 export class Order {
   @Prop({ required: true })
+  code: string;
+
+  @Prop({ required: true })
   customerName: string;
 
   @Prop()
