@@ -76,8 +76,18 @@ export class OrdersService {
     return `This action returns a #${id} order`;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
+    try {
+      const updatedOrder = await this.orderModel.findByIdAndUpdate(
+        id,
+        updateOrderDto,
+        { new: true },
+      );
+
+      return updatedOrder;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   remove(id: number) {
