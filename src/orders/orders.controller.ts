@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
@@ -19,8 +20,9 @@ export class OrdersController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+  create(@Body() createOrderDto: CreateOrderDto, @Request() req) {
+    const { userId } = req.user;
+    return this.ordersService.create(createOrderDto, userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -34,9 +36,15 @@ export class OrdersController {
     return this.ordersService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(id, updateOrderDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @Request() req,
+  ) {
+    const { userId } = req.user;
+    return this.ordersService.update(id, updateOrderDto, userId);
   }
 
   @Delete(':id')

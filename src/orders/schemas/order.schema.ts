@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
+import { User } from 'src/users/schemas/user.schema';
 
 export type OrderDocument = Order & Document;
 
@@ -49,6 +50,12 @@ export class Order {
 
   @Prop({ default: false })
   isPaid: boolean;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  createdBy: User;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  updatedBy: User;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

@@ -14,11 +14,15 @@ export class OrdersService {
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(createOrderDto: CreateOrderDto, userId: string) {
     const today = new Date().toISOString().split('T')[0];
     const uuid = uuidv4().split('-')[0].toUpperCase();
     const code = `${today}-${uuid}`;
-    const order = new this.orderModel({ code, ...createOrderDto });
+    const order = new this.orderModel({
+      code,
+      ...createOrderDto,
+      createdBy: userId,
+    });
     const productIds = order.productOrders.map(({ id, quantity }) => ({
       id,
       quantity,
@@ -76,11 +80,11 @@ export class OrdersService {
     return `This action returns a #${id} order`;
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto) {
+  async update(id: string, updateOrderDto: UpdateOrderDto, userId: string) {
     try {
       const updatedOrder = await this.orderModel.findByIdAndUpdate(
         id,
-        updateOrderDto,
+        { ...updateOrderDto, updatedBy: userId },
         { new: true },
       );
 
