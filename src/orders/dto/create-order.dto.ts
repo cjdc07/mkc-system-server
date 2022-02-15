@@ -5,5 +5,5 @@ export class CreateOrderDto {
   customerAddress: string;
   forDelivery: boolean;
   deliveryDate: Date;
-  productOrder: any;
+  productOrders: [any];
 }
