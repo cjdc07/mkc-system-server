@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Order } from 'src/orders/schemas/order.schema';
 import { Product } from 'src/products/schemas/product.schema';
 import { User } from 'src/users/schemas/user.schema';
 
@@ -29,6 +30,9 @@ export class ProductChangeHistory {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   changedBy: User;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Order' })
+  order: Order;
 }
 
 export const ProductChangeHistorySchema =

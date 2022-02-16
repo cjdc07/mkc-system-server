@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Product, ProductDocument } from 'src/products/schemas/product.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -20,7 +20,8 @@ export class OrdersService {
     private productChangeHistoryModel: Model<ProductChangeHistoryDocument>,
   ) {}
 
-  async updateProductQuantity(productOrders, userId, status) {
+  async updateProductQuantity(order, userId) {
+    const { status, productOrders } = order;
     const products = productOrders.map(({ id, quantity }) => ({
       id,
       quantity,
@@ -62,6 +63,7 @@ export class OrdersService {
         const productHistory = new this.productChangeHistoryModel({
           descriptions,
           changes,
+          order,
           product: id,
           createdFrom: 'Order',
           changedBy: userId,
@@ -89,11 +91,7 @@ export class OrdersService {
     });
 
     try {
-      await this.updateProductQuantity(
-        order.productOrders,
-        userId,
-        order.status,
-      );
+      await this.updateProductQuantity(order, userId);
       await order.save();
       return order;
     } catch (error) {
@@ -128,9 +126,12 @@ export class OrdersService {
 
   async update(id: string, updateOrderDto: UpdateOrderDto, userId: string) {
     try {
-      const { status, productOrders } = updateOrderDto;
-
-      await this.updateProductQuantity(productOrders, userId, status);
+      if (updateOrderDto.status === 'Cancelled') {
+        await this.updateProductQuantity(
+          { ...updateOrderDto, _id: new Types.ObjectId(id) },
+          userId,
+        );
+      }
 
       const updatedOrder = await this.orderModel.findByIdAndUpdate(
         id,
