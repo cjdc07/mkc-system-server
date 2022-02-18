@@ -8,6 +8,8 @@ import {
   Delete,
   Request,
   UseGuards,
+  Response,
+  Header,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -33,7 +35,7 @@ export class OrdersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
+    return this.ordersService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -49,6 +51,12 @@ export class OrdersController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.ordersService.remove(+id);
+    return this.ordersService.remove(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':code/invoice')
+  generateInvoice(@Param('code') code: string, @Response() res) {
+    return this.ordersService.generateInvoice(code, res);
   }
 }

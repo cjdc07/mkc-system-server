@@ -1,3 +1,4 @@
+import * as PDFDocument from 'pdfkit';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -120,7 +121,7 @@ export class OrdersService {
     ]);
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} order`;
   }
 
@@ -145,7 +146,15 @@ export class OrdersService {
     }
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} order`;
+  }
+
+  generateInvoice(code: string, res: Response) {
+    const doc = new PDFDocument();
+    doc.text(`Invoice for ${code}`);
+    doc.pipe(res);
+    doc.end();
+    return res;
   }
 }
