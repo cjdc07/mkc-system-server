@@ -11,10 +11,12 @@ import {
   ProductChangeHistory,
   ProductChangeHistoryDocument,
 } from 'src/product-change-histories/schemas/product-change-history.schema';
+import { InvoiceService } from './invoice.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
+    private readonly invoiceService: InvoiceService,
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     @InjectModel(ProductChangeHistory.name)
@@ -151,10 +153,6 @@ export class OrdersService {
   }
 
   generateInvoice(code: string, res: Response) {
-    const doc = new PDFDocument();
-    doc.text(`Invoice for ${code}`);
-    doc.pipe(res);
-    doc.end();
-    return res;
+    return this.invoiceService.generate(code, res);
   }
 }

@@ -5,6 +5,7 @@ import { OrdersController } from './orders.controller';
 import { Order, OrderSchema } from './schemas/order.schema';
 import { ProductsModule } from 'src/products/products.module';
 import { ProductChangeHistoriesModule } from 'src/product-change-histories/product-change-histories.module';
+import { InvoiceService } from './invoice.service';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { ProductChangeHistoriesModule } from 'src/product-change-histories/produ
     ProductChangeHistoriesModule,
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, InvoiceService],
 })
 export class OrdersModule {}
