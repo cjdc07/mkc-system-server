@@ -55,8 +55,8 @@ export class OrdersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post(':code/invoice')
-  generateInvoice(@Param('code') code: string, @Response() res) {
-    return this.ordersService.generateInvoice(code, res);
+  @Post(':id/invoice')
+  generateInvoice(@Param('id') id: string, @Response() res) {
+    return this.ordersService.generateInvoice(id, res);
   }
 }

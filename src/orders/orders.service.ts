@@ -23,7 +23,7 @@ export class OrdersService {
     private productChangeHistoryModel: Model<ProductChangeHistoryDocument>,
   ) {}
 
-  async updateProductQuantity(order, userId) {
+  private async updateProductQuantity(order, userId) {
     const { status, productOrders } = order;
     const products = productOrders.map(({ id, quantity }) => ({
       id,
@@ -87,8 +87,15 @@ export class OrdersService {
     const today = new Date().toISOString().split('T')[0];
     const uuid = uuidv4().split('-')[0].toUpperCase();
     const code = `${today}-${uuid}`;
+
+    const total = createOrderDto.productOrders.reduce((acc, { total }) => {
+      acc += +total;
+      return acc;
+    }, 0);
+
     const order = new this.orderModel({
       code,
+      total,
       ...createOrderDto,
       createdBy: userId,
     });
@@ -124,7 +131,7 @@ export class OrdersService {
   }
 
   findOne(id: string) {
-    return `This action returns a #${id} order`;
+    return this.orderModel.findById(id);
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto, userId: string) {
@@ -152,7 +159,8 @@ export class OrdersService {
     return `This action removes a #${id} order`;
   }
 
-  generateInvoice(code: string, res: Response) {
-    return this.invoiceService.generate(code, res);
+  async generateInvoice(id: string, res: Response) {
+    const order = await this.orderModel.findById(id);
+    return this.invoiceService.generate(order, res);
   }
 }

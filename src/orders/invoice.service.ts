@@ -1,8 +1,34 @@
 import * as PDFDocument from 'pdfkit';
 import { Injectable } from '@nestjs/common';
+import { Order } from './schemas/order.schema';
 
 @Injectable()
 export class InvoiceService {
+  generateHr = (doc, y) => {
+    doc
+      .strokeColor('#aaaaaa')
+      .lineWidth(1)
+      .moveTo(50, y)
+      .lineTo(550, y)
+      .stroke();
+  };
+
+  formatCurrency(value) {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      currencyDisplay: 'code',
+    }).format(value);
+  }
+
+  formatDate(date) {
+    return new Date(date).toLocaleString('en', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
   generateHeader(doc) {
     doc
       .image('assets/logo.jpeg', 50, 20, { width: 100 })
@@ -18,10 +44,171 @@ export class InvoiceService {
       .moveDown();
   }
 
-  generate(code: string, res: Response) {
+  generateOrderInformation(doc, order) {
+    doc
+      .fillColor('#444444')
+      .fontSize(16)
+      .font('Helvetica')
+      .text('Order Information', 50, 130);
+
+    this.generateHr(doc, 152);
+
+    const orderInformationTop = 160;
+
+    doc
+      .fontSize(10)
+
+      .font('Helvetica')
+      .text('Order #:', 50, orderInformationTop)
+      .font('Helvetica-Bold')
+      .text(order.code, 150, orderInformationTop)
+
+      .font('Helvetica')
+      .text('Order Date:', 50, orderInformationTop + 15)
+      .font('Helvetica-Bold')
+      .text(this.formatDate(order.createdAt), 150, orderInformationTop + 15)
+
+      .font('Helvetica')
+      .text('Total:', 50, orderInformationTop + 30)
+      .font('Helvetica-Bold')
+      .text(this.formatCurrency(order.total), 150, orderInformationTop + 30)
+
+      .font('Helvetica')
+      .text('For Delivery:', 375, orderInformationTop)
+      .font('Helvetica-Bold')
+      .text(order.forDelivery ? 'Yes' : 'No', 450, orderInformationTop);
+
+    if (order.forDelivery) {
+      doc
+        .font('Helvetica')
+        .text('Delivery Date:', 375, orderInformationTop + 15)
+        .font('Helvetica-Bold')
+        .text(
+          this.formatDate(order.deliveryDate),
+          450,
+          orderInformationTop + 15,
+        );
+    }
+
+    doc.moveDown();
+
+    this.generateHr(doc, 205);
+  }
+
+  generateCustomerInformation(doc, order) {
+    doc
+      .fillColor('#444444')
+      .fontSize(16)
+      .font('Helvetica')
+      .text('Customer Information', 50, 230);
+
+    this.generateHr(doc, 252);
+
+    const orderInformationTop = 260;
+
+    doc
+      .fontSize(10)
+
+      .font('Helvetica')
+      .text('Name:', 50, orderInformationTop)
+      .font('Helvetica-Bold')
+      .text(order.customerName, 150, orderInformationTop)
+
+      .font('Helvetica')
+      .text('Email:', 50, orderInformationTop + 15)
+      .font('Helvetica-Bold')
+      .text(
+        order.customerEmail ? order.customerEmail : 'n/a',
+        150,
+        orderInformationTop + 15,
+      )
+
+      .font('Helvetica')
+      .text('Contact:', 50, orderInformationTop + 30)
+      .font('Helvetica-Bold')
+      .text(
+        order.customerContact ? order.customerContact : 'n/a',
+        150,
+        orderInformationTop + 30,
+      )
+
+      .font('Helvetica')
+      .text('Address:', 375, orderInformationTop)
+      .font('Helvetica-Bold')
+      .text(
+        order.customerAddress ? order.customerAddress : 'n/a',
+        425,
+        orderInformationTop,
+      )
+      .moveDown();
+
+    this.generateHr(doc, 305);
+  }
+
+  generateTableRow(doc, y, code, name, price, quantity, total) {
+    doc
+      .fontSize(10)
+      .text(code, 50, y)
+      .text(name, 150, y)
+      .text(price, 280, y, { width: 90, align: 'right' })
+      .text(quantity, 370, y, { width: 90, align: 'right' })
+      .text(total, 0, y, { align: 'right' });
+  }
+
+  generateInvoiceTable(doc, order) {
+    let i;
+    const invoiceTableTop = 350;
+
+    doc.font('Helvetica-Bold');
+    this.generateTableRow(
+      doc,
+      invoiceTableTop,
+      'Item Code',
+      'Item Name',
+      'Price',
+      'Quantity',
+      'Total',
+    );
+    this.generateHr(doc, invoiceTableTop + 20);
+    doc.font('Helvetica');
+
+    for (i = 0; i < order.productOrders.length; i++) {
+      const item = order.productOrders[i];
+      const position = invoiceTableTop + (i + 1) * 30;
+      this.generateTableRow(
+        doc,
+        position,
+        item.code,
+        item.name,
+        this.formatCurrency(item.price),
+        item.quantity,
+        this.formatCurrency(item.total),
+      );
+
+      this.generateHr(doc, position + 20);
+    }
+
+    const duePosition = invoiceTableTop + (i + 1) * 30;
+    doc.font('Helvetica-Bold');
+    this.generateTableRow(
+      doc,
+      duePosition,
+      '',
+      '',
+      'Total Due',
+      '',
+      this.formatCurrency(order.total),
+    );
+    doc.font('Helvetica');
+  }
+
+  generate(order: Order, res: Response) {
     const doc = new PDFDocument();
 
     this.generateHeader(doc);
+    this.generateOrderInformation(doc, order);
+    this.generateCustomerInformation(doc, order);
+    this.generateInvoiceTable(doc, order);
 
     doc.end();
     doc.pipe(res);

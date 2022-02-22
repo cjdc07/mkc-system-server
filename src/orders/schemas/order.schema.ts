@@ -32,7 +32,6 @@ export class Order {
   @Prop()
   deliveryDate: Date;
 
-  // Props should only be id, price, quantity, total
   @Prop([{ type: MongooseSchema.Types.Mixed }])
   productOrders: [any];
 
@@ -50,6 +49,9 @@ export class Order {
 
   @Prop({ default: false })
   isPaid: boolean;
+
+  @Prop()
+  total: number;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   createdBy: User;
