@@ -4,6 +4,8 @@ import { Order } from './schemas/order.schema';
 
 @Injectable()
 export class InvoiceService {
+  private invoiceTableEnd: number;
+
   generateHr = (doc, y) => {
     doc
       .strokeColor('#aaaaaa')
@@ -200,6 +202,55 @@ export class InvoiceService {
       this.formatCurrency(order.total),
     );
     doc.font('Helvetica');
+
+    this.invoiceTableEnd = duePosition;
+  }
+
+  generateSignaturesSection(doc) {
+    const checkedByY = this.invoiceTableEnd + 50;
+    const checkedByLineY = checkedByY + 10;
+    const checkedBySignatureDateText = checkedByY + 15;
+
+    const approvedByY = checkedByY + 50;
+    const approvedByLineY = approvedByY + 10;
+    const approvedByYSignatureDateText = approvedByY + 15;
+
+    doc
+      .text('Checked by:', 50, checkedByY)
+      .strokeColor('#aaaaaa')
+      .lineWidth(1)
+      .moveTo(110, checkedByLineY)
+      .lineTo(275, checkedByLineY)
+      .stroke()
+      .text(
+        'Signature over printed name / Date',
+        115,
+        checkedBySignatureDateText,
+      )
+
+      .text('Approved by:', 50, approvedByY)
+      .strokeColor('#aaaaaa')
+      .lineWidth(1)
+      .moveTo(110, approvedByLineY)
+      .lineTo(275, approvedByLineY)
+      .stroke()
+      .text(
+        'Signature over printed name / Date',
+        115,
+        approvedByYSignatureDateText,
+      )
+
+      .text('Received by:', 315, approvedByY)
+      .strokeColor('#aaaaaa')
+      .lineWidth(1)
+      .moveTo(375, approvedByLineY)
+      .lineTo(540, approvedByLineY)
+      .stroke()
+      .text(
+        'Signature over printed name / Date',
+        380,
+        approvedByYSignatureDateText,
+      );
   }
 
   generate(order: Order, res: Response) {
@@ -209,6 +260,7 @@ export class InvoiceService {
     this.generateOrderInformation(doc, order);
     this.generateCustomerInformation(doc, order);
     this.generateInvoiceTable(doc, order);
+    this.generateSignaturesSection(doc);
 
     doc.end();
     doc.pipe(res);
