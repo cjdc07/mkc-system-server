@@ -6,4 +6,7 @@ export class CreateOrderDto {
   forDelivery: boolean;
   deliveryDate: Date;
   productOrders: [any];
+  paymentMethod: string;
+  paymentDueDate: Date;
+  initialPayment: number;
 }

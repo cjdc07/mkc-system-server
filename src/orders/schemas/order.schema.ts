@@ -53,6 +53,18 @@ export class Order {
   @Prop()
   total: number;
 
+  @Prop({
+    default: 'Cash',
+    enum: ['Cash', 'GCash', 'Bank Transfer'],
+  })
+  paymentMethod: string;
+
+  @Prop()
+  paymentDueDate: Date;
+
+  @Prop({ default: 0 })
+  initialPayment: number;
+
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   createdBy: User;
 
