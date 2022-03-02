@@ -96,6 +96,7 @@ export class OrdersService {
     const order = new this.orderModel({
       code,
       total,
+      remainingBalance: total - createOrderDto.initialPayment,
       ...createOrderDto,
       createdBy: userId,
     });

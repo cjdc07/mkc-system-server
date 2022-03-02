@@ -71,24 +71,33 @@ export class InvoiceService {
       .text(this.formatDate(order.createdAt), 150, orderInformationTop + 15)
 
       .font('Helvetica')
-      .text('Total:', 50, orderInformationTop + 30)
+      .text('Payment Due Date:', 50, orderInformationTop + 30)
       .font('Helvetica-Bold')
-      .text(this.formatCurrency(order.total), 150, orderInformationTop + 30)
+      .text(
+        this.formatDate(order.paymentDueDate),
+        150,
+        orderInformationTop + 30,
+      )
 
       .font('Helvetica')
-      .text('For Delivery:', 375, orderInformationTop)
+      .text('Payment Method:', 350, orderInformationTop)
       .font('Helvetica-Bold')
-      .text(order.forDelivery ? 'Yes' : 'No', 450, orderInformationTop);
+      .text(order.paymentMethod, 450, orderInformationTop)
+
+      .font('Helvetica')
+      .text('For Delivery:', 350, orderInformationTop + 15)
+      .font('Helvetica-Bold')
+      .text(order.forDelivery ? 'Yes' : 'No', 450, orderInformationTop + 15);
 
     if (order.forDelivery) {
       doc
         .font('Helvetica')
-        .text('Delivery Date:', 375, orderInformationTop + 15)
+        .text('Delivery Date:', 350, orderInformationTop + 30)
         .font('Helvetica-Bold')
         .text(
           this.formatDate(order.deliveryDate),
           450,
-          orderInformationTop + 15,
+          orderInformationTop + 30,
         );
     }
 
@@ -203,7 +212,41 @@ export class InvoiceService {
     );
     doc.font('Helvetica');
 
-    this.invoiceTableEnd = duePosition;
+    const initialPaymentPosition = invoiceTableTop + (i + 1) * 30 + 15;
+    doc.font('Helvetica-Bold');
+    this.generateTableRow(
+      doc,
+      initialPaymentPosition,
+      '',
+      '',
+      'Initial Payment',
+      '',
+      this.formatCurrency(order.initialPayment),
+    );
+    doc.font('Helvetica');
+
+    const remainingBalanceHr = invoiceTableTop + (i + 1) * 30 + 30;
+    doc
+      .strokeColor('#aaaaaa')
+      .lineWidth(1)
+      .moveTo(300, remainingBalanceHr)
+      .lineTo(550, remainingBalanceHr)
+      .stroke();
+
+    const remainingBalancePosition = invoiceTableTop + (i + 1) * 30 + 35;
+    doc.font('Helvetica-Bold');
+    this.generateTableRow(
+      doc,
+      remainingBalancePosition,
+      '',
+      '',
+      'Balance Due',
+      '',
+      this.formatCurrency(order.remainingBalance),
+    );
+    doc.font('Helvetica');
+
+    this.invoiceTableEnd = remainingBalancePosition;
   }
 
   generateSignaturesSection(doc) {

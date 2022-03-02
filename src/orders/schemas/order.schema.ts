@@ -65,6 +65,9 @@ export class Order {
   @Prop({ default: 0 })
   initialPayment: number;
 
+  @Prop({ default: 0 })
+  remainingBalance: number;
+
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   createdBy: User;
 
